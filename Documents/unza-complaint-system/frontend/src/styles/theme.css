@@ -1,0 +1,166 @@
+:root {
+  --bg: #f7f8fb;
+  --bg-elev: #ffffff;
+  --text: #0f172a;
+  --muted: #5b6476;
+  --primary: #2563eb;
+  --primary-600: #1d4ed8;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --radius: 12px;
+  --shadow: 0 10px 30px rgba(2, 6, 23, 0.05);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #f9fafb, var(--bg) 60%, #eef2ff);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid transparent;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(180deg, var(--primary), var(--primary-600));
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
+}
+
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn.secondary {
+  background: #fff;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid.two { grid-template-columns: repeat(2, 1fr); }
+.grid.three { grid-template-columns: repeat(3, 1fr); }
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: saturate(180%) blur(8px);
+  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav a:hover { color: var(--text); }
+
+.input, .select, .textarea {
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.badge { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); }
+.badge.success { background: rgba(22, 163, 74, 0.08); color: #166534; border-color: rgba(22, 163, 74, 0.25); }
+.badge.warning { background: rgba(217, 119, 6, 0.08); color: #92400e; border-color: rgba(217, 119, 6, 0.25); }
+.badge.danger { background: rgba(220, 38, 38, 0.08); color: #991b1b; border-color: rgba(220, 38, 38, 0.25); }
+
+h1, h2, h3 { margin: 0 0 12px; }
+p { color: var(--muted); }
+
+
+/* Form primitives */
+.form {
+  display: grid;
+  gap: 12px;
+  max-width: 720px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.input, .select, .textarea {
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.input:focus, .select:focus, .textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.helper { color: var(--muted); font-size: 12px; }
+
+/* Alerts */
+.alert { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); }
+.alert.error { background: #fff1f2; border-color: #fecdd3; color: #b91c1c; }
+
+/* Buttons & links */
+.btn:hover:not(:disabled) { filter: brightness(0.97); transform: translateY(-1px); }
+.btn.secondary:hover { background: #f8fafc; }
+
+.link { color: var(--primary); text-decoration: underline; font-weight: 600; }
+.link:hover { color: var(--primary-600); }
+
+/* Lists */
+.list { list-style: none; margin: 0; padding: 0; }
+.list-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+.list-item:first-child { border-top: none; }
+.item-title a { color: var(--text); text-decoration: none; font-weight: 700; }
+.item-title a:hover { text-decoration: underline; }
+.item-meta { color: var(--muted); font-size: 14px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Tables */
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 12px; text-align: left; }
+.table thead th { font-size: 13px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--muted); border-bottom: 1px solid var(--border); }
+.table tbody tr { border-bottom: 1px solid var(--border); }
+.table tbody tr:hover { background: #f8fafc; }
+
