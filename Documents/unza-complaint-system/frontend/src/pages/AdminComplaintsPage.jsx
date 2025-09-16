@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import UserSearch from '../components/UserSearch';
 
 const AdminComplaintsPage = () => {
   const [complaints, setComplaints] = useState([]);
@@ -25,6 +26,8 @@ const AdminComplaintsPage = () => {
     await api.put(`/complaints/${id}`, payload);
     await load();
   };
+
+  const [assigningId, setAssigningId] = useState(null);
 
   return (
     <div className="container" style={{ maxWidth: 1200 }}>
@@ -65,7 +68,30 @@ const AdminComplaintsPage = () => {
                       <option value="rejected">Rejected</option>
                     </select>
                   </td>
-                  <td>{c.assigned_to || <span className="badge">Unassigned</span>}</td>
+                  <td style={{ position: 'relative' }}>
+                    {c.assigned_to ? <span className="badge">{c.assigned_to}</span> : <span className="badge">Unassigned</span>}
+                    <div className="grid" style={{ gridTemplateColumns: 'repeat(2, max-content)', gap: 8, marginTop: 8 }}>
+                      <button className="btn secondary" onClick={() => setAssigningId(c.complaint_id)}>Assign</button>
+                      {c.assigned_to && (
+                        <button className="btn secondary" onClick={() => updateComplaint(c.complaint_id, { assigned_to: null })}>Clear</button>
+                      )}
+                    </div>
+                    {assigningId === c.complaint_id && (
+                      <div style={{ marginTop: 8 }}>
+                        <UserSearch
+                          label={null}
+                          placeholder="Search user to assign..."
+                          onSelect={(u) => {
+                            updateComplaint(c.complaint_id, { assigned_to: u.computer_number });
+                            setAssigningId(null);
+                          }}
+                        />
+                        <div className="grid" style={{ gridTemplateColumns: 'max-content', marginTop: 8 }}>
+                          <button className="btn secondary" onClick={() => setAssigningId(null)}>Cancel</button>
+                        </div>
+                      </div>
+                    )}
+                  </td>
                   <td>
                     <button className="btn secondary" onClick={() => updateComplaint(c.complaint_id, { status: 'resolved' })}>Mark Resolved</button>
                   </td>

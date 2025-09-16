@@ -8,12 +8,16 @@ const ComplaintsPage = () => {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAssigned, setShowAssigned] = useState(false);
 
   useEffect(() => {
     const fetchComplaints = async () => {
       if (!user) return;
       try {
-        const { data } = await api.get('/complaints', { params: { limit: 10, computer_number: user.computer_number } });
+        const params = showAssigned
+          ? { limit: 10, assigned_to: user.computer_number }
+          : { limit: 10, computer_number: user.computer_number };
+        const { data } = await api.get('/complaints', { params });
         setComplaints(data.data || []);
       } catch (e) {
         setError('Failed to load complaints');
@@ -22,7 +26,7 @@ const ComplaintsPage = () => {
       }
     };
     fetchComplaints();
-  }, [user]);
+  }, [user, showAssigned]);
 
   if (loading || authLoading) return <div>Loading...</div>;
   if (error) return <div className="alert error">{error}</div>;
@@ -32,6 +36,10 @@ const ComplaintsPage = () => {
       <h1>Complaints</h1>
       <div style={{ margin: '0.5rem 0' }}>
         <Link className="btn" to="/complaints/new">+ Submit new complaint</Link>
+      </div>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(2, max-content)', gap: 8, margin: '8px 0' }}>
+        <button className={`btn ${showAssigned ? 'secondary' : ''}`} onClick={() => setShowAssigned(false)}>My Complaints</button>
+        <button className={`btn ${showAssigned ? '' : 'secondary'}`} onClick={() => setShowAssigned(true)}>Assigned To Me</button>
       </div>
       {complaints.length === 0 ? (
         <p>No complaints found.</p>

@@ -318,6 +318,7 @@ router.get('/', async (req, res) => {
       category,
       priority,
       computer_number,
+      assigned_to,
       page = 1,
       limit = 10,
       sort_by = 'created_at',
@@ -346,6 +347,11 @@ router.get('/', async (req, res) => {
     if (computer_number) {
       whereConditions.push('computer_number = ?');
       queryParams.push(computer_number);
+    }
+
+    if (assigned_to) {
+      whereConditions.push('assigned_to = ?');
+      queryParams.push(assigned_to);
     }
 
     const whereClause = whereConditions.length > 0 
@@ -381,7 +387,8 @@ router.get('/', async (req, res) => {
         contact_email,
         anonymous,
         created_at,
-        updated_at
+        updated_at,
+        assigned_to
       FROM complaints 
       ${whereClause}
       ORDER BY ${sortColumn} ${sortOrder}
