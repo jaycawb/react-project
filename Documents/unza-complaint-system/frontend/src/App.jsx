@@ -10,6 +10,7 @@ import ComplaintDetailsPage from './pages/ComplaintDetailsPage';
 import MeetingsPage from './pages/MeetingsPage';
 import MeetingFormPage from './pages/MeetingFormPage';
 import MeetingDetailsPage from './pages/MeetingDetailsPage';
+import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminComplaintsPage from './pages/AdminComplaintsPage';
 import AdminReportsPage from './pages/AdminReportsPage';
@@ -118,6 +119,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <ProfilePage />
+                  </Layout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/notifications" 
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <NotificationsPage />
                   </Layout>
                 </ProtectedRoute>
               } 

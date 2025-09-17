@@ -1,6 +1,8 @@
 // routes/complaints.js
 import express from 'express';
 import { promisePool } from '../config/db.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { notificationService } from '../services/notificationService.js';
 
 const router = express.Router();
 
@@ -493,7 +495,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /complaints/:id - Update complaint status (Admin only)
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, authorize(['admin']), async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -594,6 +596,11 @@ router.put('/:id', async (req, res) => {
     `;
 
     await promisePool.query(updateQuery, queryParams);
+
+    // trigger notification on status change
+    if (status && status !== existingComplaint[0].status) {
+      await notificationService.notifyComplaintUpdate(parseInt(id), status, admin_response);
+    }
 
     // Get updated complaint
     const [updatedComplaint] = await promisePool.query(

@@ -2,6 +2,7 @@
 import express from 'express';
 import { promisePool } from '../config/db.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { notificationService } from '../services/notificationService.js';
 
 const router = express.Router();
 
@@ -60,6 +61,9 @@ router.post('/', authenticate, async (req, res) => {
       participant_computer_number,
       scheduled_at
     ]);
+
+    // trigger notification to participant
+    await notificationService.notifyMeetingRequest(result.insertId);
 
     res.status(201).json({
       success: true,

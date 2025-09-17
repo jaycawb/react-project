@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -21,6 +22,7 @@ const Navbar = () => {
           </>
         )}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {user && <NotificationBell />}
           {user ? (
             <>
               <Link to="/profile">{user.first_name || 'Profile'}</Link>

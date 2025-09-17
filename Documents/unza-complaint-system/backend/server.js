@@ -16,7 +16,7 @@ import complaintRoutes from './routes/complaints.js';
 import meetingRoutes from './routes/meetings.js';
 import userRoutes from './routes/users.js';
 import adminRoutes from './routes/admin.js';
-// import notificationRoutes from './routes/notifications.js'; // (file does not exist)
+import notificationRoutes from './routes/notifications.js';
 
 // Import middleware
 // import { errorHandler } from './middleware/errorHandler.js'; // (file does not exist)
@@ -89,7 +89,7 @@ app.get('/', (req, res) => {
       meetings: '/api/meetings',
       users: '/api/users',
       admin: '/api/admin',
-  // notifications: '/api/notifications'
+      notifications: '/api/notifications'
     }
   });
 });
@@ -100,7 +100,7 @@ app.use('/api/complaints', complaintRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
-// app.use('/api/notifications', notificationRoutes); // (file does not exist)
+app.use('/api/notifications', notificationRoutes);
 
 // Test database route
 app.get('/api/test-db', async (req, res) => {
