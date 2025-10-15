@@ -267,6 +267,9 @@ router.put('/:id', authenticate, async (req, res) => {
       [status, parseInt(id)]
     );
 
+    // Notify relevant parties about the status change
+    await notificationService.notifyMeetingUpdate(parseInt(id), status, req.user.computer_number);
+
     res.json({
       success: true,
       message: `Meeting ${status} successfully`

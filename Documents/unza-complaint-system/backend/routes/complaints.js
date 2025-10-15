@@ -494,7 +494,111 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// PUT /complaints/:id - Update complaint status (Admin only)
+// PUT /complaints/:id/status - Update complaint status (Assigned users and admins)
+router.put('/:id/status', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate ID
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid complaint ID provided'
+      });
+    }
+
+    // Check if complaint exists and get current data
+    const [existingComplaint] = await promisePool.query(
+      'SELECT complaint_id, status, assigned_to, computer_number FROM complaints WHERE complaint_id = ?',
+      [parseInt(id)]
+    );
+
+    if (existingComplaint.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found',
+        error_code: 'NOT_FOUND'
+      });
+    }
+
+    const complaint = existingComplaint[0];
+
+    // Check permissions: admin or assigned user
+    const isAdmin = req.user.role === 'admin';
+    const isAssigned = complaint.assigned_to === req.user.computer_number;
+
+    if (!isAdmin && !isAssigned) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only assigned users or administrators can update complaint status.',
+        error_code: 'INSUFFICIENT_PERMISSIONS'
+      });
+    }
+
+    // Validate status
+    const validStatuses = ['pending', 'in_progress', 'resolved', 'rejected'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be one of: ' + validStatuses.join(', ')
+      });
+    }
+
+    // Prevent invalid status transitions for assigned users (keep it simple)
+    if (!isAdmin && status === 'closed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Assigned users cannot close complaints. Only administrators can close complaints.'
+      });
+    }
+
+    // Update status
+    const updateFields = ['status = ?', 'updated_at = NOW()'];
+    const queryParams = [status, parseInt(id)];
+
+    // Set resolved_at if status is resolved
+    if (status === 'resolved') {
+      updateFields.push('resolved_at = NOW()');
+    }
+
+    const updateQuery = `
+      UPDATE complaints
+      SET ${updateFields.join(', ')}
+      WHERE complaint_id = ?
+    `;
+
+    await promisePool.query(updateQuery, queryParams);
+
+    // Trigger notification on status change
+    if (status !== complaint.status) {
+      await notificationService.notifyComplaintUpdate(parseInt(id), status);
+    }
+
+    // Get updated complaint
+    const [updatedComplaint] = await promisePool.query(
+      'SELECT * FROM complaints WHERE complaint_id = ?',
+      [parseInt(id)]
+    );
+
+    res.json({
+      success: true,
+      message: 'Complaint status updated successfully',
+      data: updatedComplaint[0]
+    });
+
+  } catch (error) {
+    console.error('Error updating complaint status:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update complaint status. Please try again.',
+      error_code: 'UPDATE_ERROR'
+    });
+  }
+});
+
+// PUT /complaints/:id - Update complaint (Admin only - full update)
 router.put('/:id', authenticate, authorize(['admin']), async (req, res) => {
   try {
     const { id } = req.params;
@@ -600,6 +704,12 @@ router.put('/:id', authenticate, authorize(['admin']), async (req, res) => {
     // trigger notification on status change
     if (status && status !== existingComplaint[0].status) {
       await notificationService.notifyComplaintUpdate(parseInt(id), status, admin_response);
+    }
+
+    // trigger notification on assignment change
+    if (assigned_to && assigned_to !== existingComplaint[0].assigned_to) {
+      const assignmentMessage = `You have been assigned to handle complaint: "${existingComplaint[0].title}"`;
+      await notificationService.createNotification(assigned_to, assignmentMessage, 'complaint');
     }
 
     // Get updated complaint

@@ -433,4 +433,59 @@ router.post('/change-password', async (req, res) => {
   }
 });
 
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    // Check if user exists
+    const [users] = await promisePool.query(
+      'SELECT computer_number, first_name, last_name FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      // Don't reveal if email exists or not for security
+      return res.json({
+        success: true,
+        message: 'If an account with this email exists, you will receive password reset instructions.'
+      });
+    }
+
+    const user = users[0];
+
+    // Generate reset token (simple implementation - in production use crypto.randomBytes)
+    const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const resetExpires = new Date(Date.now() + 3600000); // 1 hour
+
+    // Store reset token in database (you might want to add a reset_token and reset_expires column)
+    // For now, we'll just send a success message
+    console.log(`Password reset requested for ${email}. Token: ${resetToken}`);
+
+    // In a real implementation, you would:
+    // 1. Store the reset token and expiry in the database
+    // 2. Send an email with the reset link
+    // 3. Create a reset password page that validates the token
+
+    res.json({
+      success: true,
+      message: 'If an account with this email exists, you will receive password reset instructions.'
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process request. Please try again.',
+      error_code: 'FORGOT_PASSWORD_ERROR'
+    });
+  }
+});
+
 export default router;

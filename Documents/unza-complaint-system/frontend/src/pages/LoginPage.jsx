@@ -20,6 +20,10 @@ const LoginPage = () => {
     role: 'student'
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
+  const [resetError, setResetError] = useState('');
 
   const { login, register, loading, error, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -52,16 +56,16 @@ const LoginPage = () => {
   // Handle registration form submission
   const handleRegister = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation
-    if (!registerData.computer_number || !registerData.first_name || 
-        !registerData.last_name || !registerData.email || 
+    if (!registerData.computer_number || !registerData.first_name ||
+        !registerData.last_name || !registerData.email ||
         !registerData.phone || !registerData.password) {
       return;
     }
 
     const result = await register(registerData);
-    
+
     if (result.success) {
       // Switch back to login form
       setIsRegistering(false);
@@ -79,6 +83,40 @@ const LoginPage = () => {
         password: '',
         role: 'student'
       });
+    }
+  };
+
+  // Handle forgot password submission
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setResetError('');
+    setResetMessage('');
+
+    if (!resetEmail) {
+      setResetError('Please enter your email address');
+      return;
+    }
+
+    try {
+      // Call the backend API for password reset
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: resetEmail }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setResetMessage(data.message);
+        setResetEmail('');
+      } else {
+        setResetError(data.message || 'Failed to send reset email. Please try again.');
+      }
+    } catch (error) {
+      setResetError('Failed to send reset email. Please try again.');
     }
   };
 
@@ -306,32 +344,116 @@ const LoginPage = () => {
           </form>
         )}
 
-        {/* Toggle between login and register */}
-        <div className="auth-toggle">
-          {!isRegistering ? (
-            <p>
-              Don't have an account?{' '}
+        {/* Forgot Password Form */}
+        {showForgotPassword ? (
+          <form onSubmit={handleForgotPassword} className="auth-form">
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <h2 style={{ color: 'var(--text)', marginBottom: '8px' }}>Reset Password</h2>
+              <p style={{ color: 'var(--muted)', fontSize: '14px' }}>
+                Enter your email address and we'll send you instructions to reset your password.
+              </p>
+            </div>
+
+            {resetError && (
+              <div className="error-message" style={{ marginBottom: '16px' }}>
+                <span>⚠️</span>
+                <p>{resetError}</p>
+              </div>
+            )}
+
+            {resetMessage && (
+              <div style={{
+                background: '#d1fae5',
+                border: '1px solid #a7f3d0',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span>✅</span>
+                <p style={{ color: '#065f46', margin: 0 }}>{resetMessage}</p>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="reset_email">Email Address</label>
+              <input
+                type="email"
+                className="input"
+                id="reset_email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                placeholder="your.name@unza.zm"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="submit-btn btn"
+              style={{ marginTop: '16px' }}
+            >
+              Send Reset Instructions
+            </button>
+
+            <div style={{ textAlign: 'center', marginTop: '16px' }}>
               <button
                 type="button"
                 className="link-button"
-                onClick={() => setIsRegistering(true)}
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setResetError('');
+                  setResetMessage('');
+                  setResetEmail('');
+                }}
               >
-                Create one here
+                Back to Sign In
               </button>
-            </p>
-          ) : (
-            <p>
-              Already have an account?{' '}
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => setIsRegistering(false)}
-              >
-                Sign in here
-              </button>
-            </p>
-          )}
-        </div>
+            </div>
+          </form>
+        ) : (
+          <>
+            {/* Toggle between login and register */}
+            <div className="auth-toggle">
+              {!isRegistering ? (
+                <div>
+                  <p>
+                    Don't have an account?{' '}
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => setIsRegistering(true)}
+                    >
+                      Create one here
+                    </button>
+                  </p>
+                  <p>
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => setShowForgotPassword(true)}
+                    >
+                      Forgot your password?
+                    </button>
+                  </p>
+                </div>
+              ) : (
+                <p>
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    className="link-button"
+                    onClick={() => setIsRegistering(false)}
+                  >
+                    Sign in here
+                  </button>
+                </p>
+              )}
+            </div>
+          </>
+        )}
 
         {/* Footer */}
         <div className="login-footer">
