@@ -1,63 +1,77 @@
-# Getting Started with Create React App
+# UNZA Complaint & Meeting System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a full-stack web application for managing complaints, meetings, and notifications at UNZA. It consists of a Node.js/Express backend and a React frontend.
 
-## Available Scripts
+## Prerequisites
 
-In the project directory, you can run:
+- Node.js (v18 or newer recommended)
+- npm (v9 or newer)
+- MySQL database
 
-### `npm start`
+## Backend Setup
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. Navigate to the backend folder:
+	```sh
+	cd backend
+	```
+2. Install dependencies:
+	```sh
+	npm install
+	```
+3. Create a `.env` file (see `.env.example` if available) and configure your database and Twilio credentials.
+4. Start the backend server:
+	```sh
+	npm run dev
+	```
+	or for production:
+	```sh
+	npm start
+	```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Backend Packages
+- express, cors, helmet, morgan, dotenv, mysql2, bcrypt, jsonwebtoken, express-rate-limit, multer, twilio, validator, body-parser, isomorphic-dompurify, express-validator
 
-### `npm test`
+## Frontend Setup
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Navigate to the frontend folder:
+	```sh
+	cd frontend
+	```
+2. Install dependencies:
+	```sh
+	npm install
+	```
+3. Start the frontend development server:
+	```sh
+	npm start
+	```
+	The app will run at [http://localhost:3000](http://localhost:3000)
 
-### `npm run build`
+### Frontend Packages
+- react, react-dom, react-scripts, axios, react-router-dom, react-redux, @reduxjs/toolkit, react-hook-form, yup, react-toastify, date-fns, @hookform/resolvers
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Operation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Start the backend server (see above).
+2. Start the frontend server (see above).
+3. Access the app at [http://localhost:3000](http://localhost:3000).
+4. Log in as a user, staff, or admin to access different features:
+	- Submit and track complaints
+	- Book and manage meetings
+	- Receive notifications
+	- Admins can assign complaints and manage users
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Database Setup
 
-### `npm run eject`
+Create a MySQL database and configure the connection in your backend `.env` file. Run any provided migration scripts to set up tables for users, complaints, meetings, and notifications.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Additional Notes
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- For Twilio SMS notifications, configure your Twilio credentials in `.env`.
+- For production, build the frontend with `npm run build` and serve it with a static server or via the backend.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
+---
+For more details, see the source code and comments in each folder.
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
