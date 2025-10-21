@@ -271,6 +271,21 @@ router.post('/', async (req, res) => {
       anonymous ? 1 : 0
     ]);
 
+    // Send notification to all admins about new complaint
+    try {
+      const [admins] = await promisePool.query(
+        'SELECT computer_number FROM users WHERE role = ?',
+        ['admin']
+      );
+
+      for (const admin of admins) {
+        const adminMessage = `New complaint submitted: "${title}" (${category}) - ${anonymous ? 'Anonymous' : `by ${computer_number || 'Unknown user'}`}`;
+        await notificationService.createNotification(admin.computer_number, adminMessage, 'complaint');
+      }
+    } catch (notificationError) {
+      console.error('Failed to notify admins of new complaint (non-blocking):', notificationError);
+    }
+
     res.status(201).json({
       success: true,
       message: 'Complaint submitted successfully',

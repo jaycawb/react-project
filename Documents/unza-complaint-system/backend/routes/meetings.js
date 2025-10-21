@@ -221,23 +221,13 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-// PUT /meetings/:id - Update meeting status
+// PUT /meetings/:id - Update meeting status or reschedule
 router.put('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, scheduled_at, title, description } = req.body;
 
-    // Validate status
-    const validStatuses = ['pending', 'confirmed', 'cancelled'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid status',
-        valid_statuses: validStatuses
-      });
-    }
-
-    // Check if meeting exists and user has permission
+    // Check if meeting exists
     const [meeting] = await promisePool.query(
       'SELECT * FROM meetings WHERE meeting_id = ?',
       [parseInt(id)]
@@ -250,36 +240,151 @@ router.put('/:id', authenticate, async (req, res) => {
       });
     }
 
-    // Only participant or admin can confirm/cancel
-    const canUpdate = req.user.role === 'admin' || 
-                     meeting[0].participant_computer_number === req.user.computer_number;
+    const meetingData = meeting[0];
+    const isOrganizer = meetingData.organizer_computer_number === req.user.computer_number;
+    const isParticipant = meetingData.participant_computer_number === req.user.computer_number;
+    const isAdmin = req.user.role === 'admin';
 
-    if (!canUpdate) {
-      return res.status(403).json({
+    // Build update query dynamically
+    let updateFields = [];
+    let queryParams = [];
+
+    // Handle status updates
+    if (status !== undefined) {
+      const validStatuses = ['pending', 'confirmed', 'cancelled'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid status',
+          valid_statuses: validStatuses
+        });
+      }
+
+      // Check permissions for status updates
+      const canUpdateStatus = isAdmin || isParticipant;
+      if (!canUpdateStatus) {
+        return res.status(403).json({
+          success: false,
+          message: 'Only the participant or admin can update meeting status'
+        });
+      }
+
+      updateFields.push('status = ?');
+      queryParams.push(status);
+    }
+
+    // Handle rescheduling
+    if (scheduled_at !== undefined) {
+      // Validate new time is in the future
+      const newMeetingTime = new Date(scheduled_at);
+      if (newMeetingTime <= new Date()) {
+        return res.status(400).json({
+          success: false,
+          message: 'New meeting time must be in the future'
+        });
+      }
+
+      // Check permissions for rescheduling
+      const canReschedule = isAdmin || isOrganizer || isParticipant;
+      if (!canReschedule) {
+        return res.status(403).json({
+          success: false,
+          message: 'Only organizers, participants, or admins can reschedule meetings'
+        });
+      }
+
+      updateFields.push('scheduled_at = ?');
+      queryParams.push(scheduled_at);
+    }
+
+    // Handle title and description updates (organizer or admin only)
+    if (title !== undefined) {
+      const canUpdateDetails = isAdmin || isOrganizer;
+      if (!canUpdateDetails) {
+        return res.status(403).json({
+          success: false,
+          message: 'Only the organizer or admin can update meeting details'
+        });
+      }
+      updateFields.push('title = ?');
+      queryParams.push(title);
+    }
+
+    if (description !== undefined) {
+      const canUpdateDetails = isAdmin || isOrganizer;
+      if (!canUpdateDetails) {
+        return res.status(403).json({
+          success: false,
+          message: 'Only the organizer or admin can update meeting details'
+        });
+      }
+      updateFields.push('description = ?');
+      queryParams.push(description);
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
         success: false,
-        message: 'Only the participant or admin can update meeting status'
+        message: 'No valid fields provided for update'
       });
     }
 
-    // Update status
-    await promisePool.query(
-      'UPDATE meetings SET status = ? WHERE meeting_id = ?',
-      [status, parseInt(id)]
-    );
+    // Check if updated_at column exists, if not, skip it
+    // Add updated_at only if the column exists
+    try {
+      const [columns] = await promisePool.query(
+        "SHOW COLUMNS FROM meetings LIKE 'updated_at'"
+      );
+      if (columns.length > 0) {
+        updateFields.push('updated_at = NOW()');
+      }
+    } catch (columnCheckError) {
+      console.log('updated_at column check failed, skipping:', columnCheckError.message);
+    }
+    queryParams.push(parseInt(id));
 
-    // Notify relevant parties about the status change
-    await notificationService.notifyMeetingUpdate(parseInt(id), status, req.user.computer_number);
+    const updateQuery = `
+      UPDATE meetings
+      SET ${updateFields.join(', ')}
+      WHERE meeting_id = ?
+    `;
+
+    await promisePool.query(updateQuery, queryParams);
+
+    // Notify relevant parties about changes (wrap in try-catch to prevent API failure)
+    try {
+      if (status !== undefined) {
+        await notificationService.notifyMeetingUpdate(parseInt(id), status, req.user.computer_number);
+      }
+      if (scheduled_at !== undefined) {
+        await notificationService.notifyMeetingRescheduled(parseInt(id), req.user.computer_number);
+      }
+      if (title !== undefined || description !== undefined) {
+        await notificationService.notifyMeetingDetailsChanged(parseInt(id), req.user.computer_number);
+      }
+    } catch (notificationError) {
+      console.error('Notification error (non-blocking):', notificationError);
+      // Don't fail the API call if notifications fail
+    }
 
     res.json({
       success: true,
-      message: `Meeting ${status} successfully`
+      message: 'Meeting updated successfully'
     });
 
   } catch (error) {
     console.error('Error updating meeting:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState
+    });
     res.status(500).json({
       success: false,
-      message: 'Failed to update meeting'
+      message: 'Failed to update meeting',
+      error_details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

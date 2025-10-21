@@ -15,6 +15,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminComplaintsPage from './pages/AdminComplaintsPage';
 import AdminReportsPage from './pages/AdminReportsPage';
 import AdminMeetingsPage from './pages/AdminMeetingsPage';
+import AdminUserForm from './pages/AdminUserForm';
+import AdminUsersPage from './pages/AdminUsersPage';
 import ProfilePage from './pages/ProfilePage';
 import StudentPortal from './pages/StudentPortal';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -133,15 +135,39 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/admin" 
+            <Route
+              path="/admin"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <Layout>
                     <AdminDashboard />
                   </Layout>
                 </ProtectedRoute>
-              } 
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <Layout>
+                    <AdminUsersPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users/new"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <Layout>
+                    <AdminUserForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={<LoginPage />}
             />
             <Route 
               path="/admin/complaints" 

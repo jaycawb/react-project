@@ -361,4 +361,230 @@ router.get('/stats/overview', authenticate, authorize(['admin']), async (req, re
   }
 });
 
+// POST /users - Create new user (Admin only)
+router.post('/', authenticate, authorize(['admin']), async (req, res) => {
+  try {
+    const {
+      computer_number,
+      role = 'student',
+      first_name,
+      last_name,
+      email,
+      phone,
+      password
+    } = req.body;
+
+    // Validation
+    if (!computer_number || !first_name || !last_name || !email || !phone || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required',
+        required_fields: ['computer_number', 'first_name', 'last_name', 'email', 'phone', 'password']
+      });
+    }
+
+    // Validate computer number format (10 digits)
+    if (!/^\d{10}$/.test(computer_number)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid computer number format. Expected: 10 digits (e.g., 2019123456)'
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format'
+      });
+    }
+
+    // Validate role
+    const validRoles = ['admin', 'lecturer', 'student'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Must be one of: ' + validRoles.join(', ')
+      });
+    }
+
+    // Check if user already exists
+    const [existingUser] = await promisePool.query(
+      'SELECT computer_number, email FROM users WHERE computer_number = ? OR email = ?',
+      [computer_number, email]
+    );
+
+    if (existingUser.length > 0) {
+      const conflict = existingUser[0].computer_number === computer_number
+        ? 'Computer number'
+        : 'Email address';
+
+      return res.status(409).json({
+        success: false,
+        message: `${conflict} already exists`,
+        error_code: 'USER_EXISTS'
+      });
+    }
+
+    // Hash password
+    const saltRounds = 12;
+    const password_hash = await bcrypt.hash(password, saltRounds);
+
+    // Insert new user
+    const insertQuery = `
+      INSERT INTO users (computer_number, role, first_name, last_name, email, phone, password_hash, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+    `;
+
+    await promisePool.query(insertQuery, [
+      computer_number,
+      role,
+      first_name,
+      last_name,
+      email,
+      phone,
+      password_hash
+    ]);
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      data: {
+        computer_number,
+        role,
+        first_name,
+        last_name,
+        email,
+        phone
+      }
+    });
+
+  } catch (error) {
+    console.error('User creation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create user. Please try again.',
+      error_code: 'CREATION_ERROR'
+    });
+  }
+});
+
+// PUT /users/:computer_number - Update user (Admin only)
+router.put('/:computer_number', authenticate, authorize(['admin']), async (req, res) => {
+  try {
+    const { computer_number } = req.params;
+    const { role, first_name, last_name, email, phone } = req.body;
+
+    // Check if user exists
+    const [existingUser] = await promisePool.query(
+      'SELECT computer_number, role FROM users WHERE computer_number = ?',
+      [computer_number]
+    );
+
+    if (existingUser.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+        error_code: 'USER_NOT_FOUND'
+      });
+    }
+
+    // Build update query dynamically
+    let updateFields = [];
+    let queryParams = [];
+
+    if (role !== undefined) {
+      const validRoles = ['admin', 'lecturer', 'student'];
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role. Must be one of: ' + validRoles.join(', ')
+        });
+      }
+      updateFields.push('role = ?');
+      queryParams.push(role);
+    }
+
+    if (first_name !== undefined) {
+      updateFields.push('first_name = ?');
+      queryParams.push(first_name);
+    }
+
+    if (last_name !== undefined) {
+      updateFields.push('last_name = ?');
+      queryParams.push(last_name);
+    }
+
+    if (email !== undefined) {
+      // Validate email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format'
+        });
+      }
+
+      // Check if email already exists
+      const [existingEmail] = await promisePool.query(
+        'SELECT computer_number FROM users WHERE email = ? AND computer_number != ?',
+        [email, computer_number]
+      );
+
+      if (existingEmail.length > 0) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email address already exists'
+        });
+      }
+
+      updateFields.push('email = ?');
+      queryParams.push(email);
+    }
+
+    if (phone !== undefined) {
+      updateFields.push('phone = ?');
+      queryParams.push(phone);
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields provided for update'
+      });
+    }
+
+    queryParams.push(computer_number);
+
+    const updateQuery = `
+      UPDATE users
+      SET ${updateFields.join(', ')}
+      WHERE computer_number = ?
+    `;
+
+    await promisePool.query(updateQuery, queryParams);
+
+    // Get updated user
+    const [updatedUser] = await promisePool.query(
+      'SELECT computer_number, role, first_name, last_name, email, phone FROM users WHERE computer_number = ?',
+      [computer_number]
+    );
+
+    res.json({
+      success: true,
+      message: 'User updated successfully',
+      data: updatedUser[0]
+    });
+
+  } catch (error) {
+    console.error('User update error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user',
+      error_code: 'UPDATE_ERROR'
+    });
+  }
+});
+
 export default router;

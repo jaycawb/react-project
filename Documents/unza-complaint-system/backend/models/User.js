@@ -8,3 +8,4 @@ export const findUserByComputerNumber = async (computer_number) => {
   );
   return users[0];
 };
+

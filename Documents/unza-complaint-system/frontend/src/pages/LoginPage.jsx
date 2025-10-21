@@ -9,7 +9,7 @@ const LoginPage = () => {
     computer_number: '',
     password: ''
   });
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(true);
   const [registerData, setRegisterData] = useState({
     computer_number: '',
     first_name: '',

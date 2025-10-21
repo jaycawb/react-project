@@ -459,3 +459,164 @@ h3 { font-size: var(--font-size-lg); margin: 0 0 var(--space-sm); }
   .hidden-lg { display: none; }
 }
 
+/* Notification Page Styles */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  color: var(--text);
+  background: var(--bg-elev);
+}
+
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.list-item.unread {
+  background: rgba(255, 193, 7, 0.05);
+  border-left: 3px solid var(--warning);
+}
+
+.list-item.unread:hover {
+  background: rgba(255, 193, 7, 0.1);
+}
+
+/* Flex utilities */
+.flex {
+  display: flex;
+}
+
+.gap-sm {
+  gap: 0.5rem;
+}
+
+.gap-md {
+  gap: 1rem;
+}
+
+.wrap {
+  flex-wrap: wrap;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive grid */
+.grid.responsive.md-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-lg);
+}
+
+/* Container max width utility */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Button enhancements */
+.btn.secondary {
+  background: var(--bg-elev);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn.secondary:hover:not(:disabled) {
+  background: var(--border);
+}
+
+/* Badge enhancements */
+.badge.secondary {
+  background: var(--bg-elev);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.badge.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.badge.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.badge.danger {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .tab {
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+  }
+
+  .flex.wrap {
+    justify-content: center;
+  }
+
+  .grid.responsive.md-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .flex.gap-md.wrap {
+    flex-direction: column;
+  }
+
+  .flex.gap-md.wrap > * {
+    width: 100%;
+  }
+}
+

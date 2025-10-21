@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 
 const AdminDashboard = () => {
@@ -27,9 +28,9 @@ const AdminDashboard = () => {
     <div className="container">
       <div className="flex justify-between items-center mb-lg">
         <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
-        <button className="btn" onClick={() => window.location.href = '/admin/users'}>
-          Manage Users
-        </button>
+        <Link className="btn" to="/admin/users" style={{ textDecoration: 'none' }}>
+          👥 Manage Users
+        </Link>
       </div>
       <div className="grid responsive md-2" style={{ gap: 'var(--space-lg)' }}>
         <div className="card">
@@ -58,9 +59,9 @@ const AdminDashboard = () => {
         <div className="card">
           <div className="flex justify-between items-center mb-md">
             <h2 style={{ margin: 0, color: 'var(--text)' }}>User Management</h2>
-            <button className="btn small" onClick={() => window.location.href = '/admin/users'}>
-              Manage Users
-            </button>
+            <Link className="btn small" to="/admin/users" style={{ textDecoration: 'none' }}>
+              👥 Manage Users
+            </Link>
           </div>
           <div className="grid responsive md-2 lg-4" style={{ gap: 'var(--space-md)' }}>
             <div className="card" style={{ textAlign: 'center', padding: 'var(--space-lg)', boxShadow: 'none', border: '2px solid var(--border)' }}>
@@ -147,11 +148,11 @@ const AdminDashboard = () => {
       {/* Quick Actions */}
       <div className="card" style={{ marginTop: 'var(--space-lg)' }}>
         <h2 style={{ marginBottom: 'var(--space-md)', color: 'var(--text)' }}>Quick Actions</h2>
-        <div className="grid responsive md-2 lg-3" style={{ gap: 'var(--space-md)' }}>
-          <button
+        <div className="grid responsive md-2 lg-4" style={{ gap: 'var(--space-md)' }}>
+          <Link
             className="btn"
-            onClick={() => window.location.href = '/admin/users'}
-            style={{ textAlign: 'center', padding: 'var(--space-xl)', height: 'auto' }}
+            to="/register"
+            style={{ textAlign: 'center', padding: 'var(--space-xl)', height: 'auto', textDecoration: 'none', display: 'block' }}
           >
             <div style={{
               width: '48px',
@@ -170,13 +171,13 @@ const AdminDashboard = () => {
                 <path d="M22 11h-6"></path>
               </svg>
             </div>
-            <div>Create New User</div>
-          </button>
+            <div>Add New User</div>
+          </Link>
 
-          <button
+          <Link
             className="btn secondary"
-            onClick={() => window.location.href = '/admin/complaints'}
-            style={{ textAlign: 'center', padding: 'var(--space-xl)', height: 'auto' }}
+            to="/admin/complaints"
+            style={{ textAlign: 'center', padding: 'var(--space-xl)', height: 'auto', textDecoration: 'none', display: 'block' }}
           >
             <div style={{
               width: '48px',
@@ -195,12 +196,12 @@ const AdminDashboard = () => {
               </svg>
             </div>
             <div>Manage Complaints</div>
-          </button>
+          </Link>
 
-          <button
+          <Link
             className="btn secondary"
-            onClick={() => window.location.href = '/admin/meetings'}
-            style={{ textAlign: 'center', padding: 'var(--space-xl)', height: 'auto' }}
+            to="/admin/meetings"
+            style={{ textAlign: 'center', padding: 'var(--space-xl)', height: 'auto', textDecoration: 'none', display: 'block' }}
           >
             <div style={{
               width: '48px',
@@ -220,7 +221,31 @@ const AdminDashboard = () => {
               </svg>
             </div>
             <div>Manage Meetings</div>
-          </button>
+          </Link>
+
+          <Link
+            className="btn secondary"
+            to="/admin/reports"
+            style={{ textAlign: 'center', padding: 'var(--space-xl)', height: 'auto', textDecoration: 'none', display: 'block' }}
+          >
+            <div style={{
+              width: '48px',
+              height: '48px',
+              backgroundColor: 'var(--border)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto var(--space-sm)'
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <div>View Reports</div>
+          </Link>
         </div>
       </div>
     </div>
